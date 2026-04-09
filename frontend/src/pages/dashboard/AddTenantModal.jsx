@@ -73,7 +73,7 @@ const AddTenantModal = ({ isOpen, onClose, onRefresh }) => {
                                             placeholder="springfield"
                                             className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-10 pr-28 text-white text-sm placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                                         />
-                                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-medium select-none">.localhost</span>
+                                        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-medium select-none">.{import.meta.env.VITE_BASE_DOMAIN}</span>
                                     </div>
                                     <p className="text-[11px] text-slate-600 mt-1.5 ml-1">Lowercase letters, numbers and hyphens only</p>
                                 </div>

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getTenantFromSubdomain } from '../utils/tenant';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -50,7 +50,7 @@ api.interceptors.response.use(
 
     try {
       const res = await axios.post(
-        (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/token/refresh/',
+        import.meta.env.VITE_API_URL + '/token/refresh/',
         { refresh: refreshToken }
       );
       const newToken = res.data.access;

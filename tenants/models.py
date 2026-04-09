@@ -13,5 +13,13 @@ class SchoolTenant(models.Model):
     
     created_on = models.DateField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        """Enforce cPanel DB prefix if set in environment."""
+        import os
+        prefix = os.environ.get('DB_PREFIX', '')
+        if prefix and self.db_name and not self.db_name.startswith(prefix):
+            self.db_name = f"{prefix}{self.db_name}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name

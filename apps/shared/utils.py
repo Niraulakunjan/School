@@ -10,6 +10,13 @@ import urllib3
 _current_tenant = contextvars.ContextVar("current_tenant", default=None)
 _current_db = contextvars.ContextVar("current_db", default="default")
 
+def get_prefixed_db_name(db_name):
+    """Ensures the database name has the required cPanel prefix."""
+    prefix = os.environ.get('DB_PREFIX', '')
+    if prefix and not db_name.startswith(prefix):
+        return f"{prefix}{db_name}"
+    return db_name
+
 def set_current_tenant(tenant):
     """Sets the current tenant and their database for the current context."""
     if tenant:
@@ -19,7 +26,8 @@ def set_current_tenant(tenant):
         # Proactively register the tenant's database configuration
         register_tenant_db(tenant)
         
-        _current_db.set(tenant.db_name)
+        db_name = get_prefixed_db_name(tenant.db_name)
+        _current_db.set(db_name)
     else:
         _current_db.set("default")
     return _current_tenant.set(tenant)
@@ -61,15 +69,17 @@ def register_tenant_db(tenant):
             new_db_config['NAME'] = Path(settings.BASE_DIR) / f"{tenant.db_name}.sqlite3"
         else:
             # Assuming MySQL for cPanel
-            new_db_config['NAME'] = tenant.db_name
+            new_db_config['NAME'] = get_prefixed_db_name(tenant.db_name)
         
-        settings.DATABASES[tenant.db_name] = new_db_config
+        db_alias = tenant.db_name # We use the raw name as alias for convenience
+        settings.DATABASES[db_alias] = new_db_config
 
 def create_db_if_not_exists(db_name):
     """
     Creates a MySQL database via the cPanel UAPI and grants the configured
     DB user full access to it.
     """
+    db_name = get_prefixed_db_name(db_name)
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     cpanel_user   = os.environ.get('CPANEL_USERNAME', '')

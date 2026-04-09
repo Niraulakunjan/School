@@ -65,7 +65,7 @@ const ActionMenu = ({ tenant, onAddUser, onDelete }) => {
                             className="absolute right-0 mt-1 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-30 py-1 overflow-hidden"
                             onClick={e => e.stopPropagation()}
                         >
-                            <button onClick={() => { window.open(`http://${tenant.domain_url}.localhost:5173`, '_blank'); setOpen(false); }}
+                            <button onClick={() => { window.open(`http://${tenant.domain_url}.${import.meta.env.VITE_BASE_DOMAIN}`, '_blank'); setOpen(false); }}
                                 className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                                 <Globe size={14} className="text-blue-400" /> Visit Instance
                             </button>
@@ -132,7 +132,7 @@ const TenantCard = ({ tenant, admins, adminsLoading, onAddUser, onDelete }) => (
                 </div>
                 <div className="min-w-0">
                     <p className="font-black text-white text-sm truncate">{tenant.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{tenant.domain_url}.localhost</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{tenant.domain_url}.{import.meta.env.VITE_BASE_DOMAIN}</p>
                 </div>
             </div>
             <ActionMenu tenant={tenant} onAddUser={onAddUser} onDelete={onDelete} />
@@ -157,7 +157,7 @@ const TenantCard = ({ tenant, admins, adminsLoading, onAddUser, onDelete }) => (
         </div>
 
         <div className="flex gap-2">
-            <button onClick={() => window.open(`http://${tenant.domain_url}.localhost:5173`, '_blank')}
+            <button onClick={() => window.open(`http://${tenant.domain_url}.${import.meta.env.VITE_BASE_DOMAIN}`, '_blank')}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all">
                 Visit <ExternalLink size={12} />
             </button>
@@ -300,8 +300,8 @@ const TenantListPage = () => {
                                             </div>
                                         </td>
                                         <td className="px-5 py-3.5">
-                                            <div className="flex items-center gap-2 cursor-pointer group/url" onClick={() => window.open(`http://${t.domain_url}.localhost:5173`, '_blank')}>
-                                                <code className="text-xs bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg text-indigo-400 font-mono">{t.domain_url}.localhost</code>
+                                            <div className="flex items-center gap-2 cursor-pointer group/url" onClick={() => window.open(`http://${t.domain_url}.${import.meta.env.VITE_BASE_DOMAIN}`, '_blank')}>
+                                                <code className="text-xs bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg text-indigo-400 font-mono">{t.domain_url}.{import.meta.env.VITE_BASE_DOMAIN}</code>
                                                 <ExternalLink size={11} className="text-slate-600 group-hover/url:text-slate-400 transition-colors" />
                                             </div>
                                         </td>

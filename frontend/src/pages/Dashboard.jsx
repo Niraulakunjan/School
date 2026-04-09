@@ -141,14 +141,14 @@ const Dashboard = () => (
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm text-white truncate">{school.name}</p>
-              <p className="text-xs text-slate-500">{school.domain}.localhost</p>
+              <p className="text-xs text-slate-500">{school.domain}.{import.meta.env.VITE_BASE_DOMAIN}</p>
             </div>
             <div className="text-right mr-2">
               <p className="font-black text-sm text-white">{school.students.toLocaleString()}</p>
               <p className="text-xs text-slate-500">students</p>
             </div>
             <span className={`w-2 h-2 rounded-full shrink-0 ${school.active ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-600'}`} />
-            <button onClick={() => window.open(`http://${school.domain}.localhost:5173`, '_blank')}
+            <button onClick={() => window.open(`http://${school.domain}.${import.meta.env.VITE_BASE_DOMAIN}`, '_blank')}
               className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-500 hover:text-slate-300 transition-colors border-none bg-transparent cursor-pointer"
             >
               <ExternalLink size={13} />
