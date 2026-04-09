@@ -1,0 +1,17 @@
+from django.db import models
+
+class SchoolTenant(models.Model):
+    name = models.CharField(max_length=100)
+    domain_url = models.CharField(max_length=100, unique=True, help_text="e.g., school1.sajiloschool.com or school1")
+    db_name = models.CharField(max_length=100, unique=True, help_text="Database name or sqlite filename without extension")
+    
+    # Global Branding
+    logo = models.ImageField(upload_to='tenants/logos/', null=True, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    
+    created_on = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
