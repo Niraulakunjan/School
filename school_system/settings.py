@@ -66,7 +66,7 @@ INSTALLED_APPS = [
 # --- Multi-Tenant App Categorization ---
 PLATFORM_APPS = ['tenants']
 TENANT_APPS   = ['students', 'teachers', 'finance', 'academics', 'exams', 'school_settings']
-DUAL_APPS     = ['auth', 'contenttypes', 'users', 'sessions', 'messages', 'staticfiles']
+DUAL_APPS     = ['admin', 'auth', 'contenttypes', 'users', 'sessions', 'messages', 'staticfiles']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
