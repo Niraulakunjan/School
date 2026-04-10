@@ -85,7 +85,7 @@ def create_db_if_not_exists(db_name):
     cpanel_user   = os.environ.get('CPANEL_USERNAME', '')
     cpanel_pass   = os.environ.get('CPANEL_PASSWORD', '')
     cpanel_token  = os.environ.get('CPANEL_API_TOKEN', '')
-    cpanel_domain = os.environ.get('CPANEL_DOMAIN', 'localhost')
+    cpanel_domain = os.environ.get('CPANEL_DOMAIN', 'localhost').replace('https://', '').replace('http://', '').strip('/')
     
     # Get database user from settings
     default_db = settings.DATABASES.get('default', {})
