@@ -28,8 +28,8 @@ class TenantMiddleware(MiddlewareMixin):
             parts = host.split('.')
             if len(parts) > 1:
                 subdomain = parts[0]
-                # Exclude common subdomains/localhost
-                if subdomain not in ('localhost', '127', 'www', 'pc', 'sc'):
+                # Exclude common subdomains/localhost and platform API subdomain
+                if subdomain not in ('localhost', '127', 'www', 'pc', 'sc', 'apiscl'):
                     tenant_slug = subdomain
 
         if tenant_slug:
