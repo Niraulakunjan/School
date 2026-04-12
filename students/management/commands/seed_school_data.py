@@ -4,8 +4,9 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from students.models import Student
-from academics.models import Class, Section
 from finance.models import FinancialYear, FeeStructure, FeeItem, StudentFeeEnrollment
+from academics.models import Class, Section, Subject, ClassSubject
+from exams.models import Exam, ExamRoutine, MarkLedger
 from apps.shared.utils import register_tenant_db, set_current_tenant
 from tenants.models import SchoolTenant
 
@@ -42,6 +43,11 @@ class Command(BaseCommand):
         with transaction.atomic(using=db_name):
             # 0. Cleanup existing data to avoid UNIQUE constraint errors
             self.stdout.write("Cleaning up existing student and enrollment data...")
+            # Cleanup exams and routines first due to FKs
+            MarkLedger.objects.using(db_name).all().delete()
+            ExamRoutine.objects.using(db_name).all().delete()
+            Exam.objects.using(db_name).all().delete()
+            
             StudentFeeEnrollment.objects.using(db_name).all().delete()
             from finance.models import FeeCollection
             FeeCollection.objects.using(db_name).all().delete()
@@ -112,6 +118,58 @@ class Command(BaseCommand):
                                 structure_detail=detail, name="Lab Fee", amount=1000, frequency="monthly"
                             )
 
+            # 3.5. Create Subjects and Assign to Classes
+            standard_subjects = [
+                {"name": "English", "code": "ENG"},
+                {"name": "Nepali", "code": "NEP"},
+                {"name": "Mathematics", "code": "MATH"},
+                {"name": "Science", "code": "SCI"},
+                {"name": "Social Studies", "code": "SOC"},
+            ]
+            
+            subject_objs = []
+            for sub_data in standard_subjects:
+                sub, _ = Subject.objects.using(db_name).get_or_create(
+                    name=sub_data['name'],
+                    defaults={"code": sub_data['code']}
+                )
+                subject_objs.append(sub)
+            
+            for cls in created_classes:
+                for sub in subject_objs:
+                    ClassSubject.objects.using(db_name).get_or_create(
+                        class_obj=cls,
+                        subject=sub,
+                        defaults={"full_marks": 100, "pass_marks": 35}
+                    )
+
+            # 3.6. Create Final Term Exam & Routines
+            exam, _ = Exam.objects.using(db_name).get_or_create(
+                name="Final Term 2082",
+                financial_year=fy,
+                defaults={
+                    "term": "final",
+                    "start_date": "12-01", # Chaitra 01
+                    "is_published": True
+                }
+            )
+            
+            routines_by_class = {}
+            for cls in created_classes:
+                routines_by_class[cls.name] = []
+                for idx, sub in enumerate(subject_objs):
+                    routine, _ = ExamRoutine.objects.using(db_name).get_or_create(
+                        exam=exam,
+                        subject=sub,
+                        class_obj=cls,
+                        defaults={
+                            "exam_date": f"12-{10+idx}", # 10th to 14th Chaitra
+                            "full_marks": 100,
+                            "pass_marks": 35
+                        }
+                    )
+                    routines_by_class[cls.name].append(routine)
+
             # 4. Generate 700 Students
             total_students_to_create = 700
             students_per_class = total_students_to_create // 10
@@ -139,10 +197,18 @@ class Command(BaseCommand):
                     if int(cls.name) >= 9:
                         fac = random.choice(["Science", "Management"])
                     
+                    admission_number = f"ADM-{cls.name}-{i}-{random.randint(1000, 9999)}"
+                    while Student.objects.using(db_name).filter(admission_number=admission_number).exists():
+                         admission_number = f"ADM-{cls.name}-{i}-{random.randint(1000, 9999)}"
+
+                    reg_number = f"REG-{random.randint(1000000, 9999999)}"
+                    while Student.objects.using(db_name).filter(registration_number=reg_number).exists():
+                         reg_number = f"REG-{random.randint(1000000, 9999999)}"
+
                     student = Student.objects.using(db_name).create(
                         user=user,
-                        admission_number=f"ADM-{cls.name}-{i}-{random.randint(100, 999)}",
-                        registration_number=f"REG-{random.randint(100000, 999999)}",
+                        admission_number=admission_number,
+                        registration_number=reg_number,
                         first_name=fname, last_name=lname,
                         gender=random.choice(['M', 'F']),
                         date_of_birth=date(2010 + random.randint(0, 5), random.randint(1,12), random.randint(1,28)),
@@ -165,6 +231,25 @@ class Command(BaseCommand):
                             )
                     
                     created_count += 1
+                
+                # 6. Fill Mark Ledger (Bulk for speed)
+                routines = routines_by_class.get(cls.name, [])
+                if routines:
+                    students_in_class = Student.objects.using(db_name).filter(class_name=cls.name)
+                    marks_to_create = []
+                    for std in students_in_class:
+                        for routine in routines:
+                            theory = random.randint(30, 75)
+                            practical = random.randint(15, 25)
+                            marks_to_create.append(MarkLedger(
+                                routine=routine,
+                                student=std,
+                                theory_marks=theory,
+                                practical_marks=practical,
+                                marks_obtained=theory + practical,
+                                entered_by="Demo Seed"
+                            ))
+                    MarkLedger.objects.using(db_name).bulk_create(marks_to_create)
 
         self.stdout.write(self.style.SUCCESS(f"Successfully seeded {created_count} students and their hierarchical enrollments."))
 
