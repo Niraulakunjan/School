@@ -140,7 +140,7 @@ class Command(BaseCommand):
                     ClassSubject.objects.using(db_name).get_or_create(
                         class_obj=cls,
                         subject=sub,
-                        defaults={"full_marks": 100, "pass_marks": 35}
+                        defaults={"full_marks": 100, "pass_marks": 35, "credit_hours": 4.0}
                     )
 
             # 3.6. Create Final Term Exam & Routines
