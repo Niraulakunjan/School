@@ -7,8 +7,9 @@ from tenants.models import SchoolTenant
 from apps.shared.utils import register_tenant_db, set_current_tenant
 from students.models import Student
 from academics.models import Class, Section, Subject, ClassSubject
-from teachers.models import Teacher, StaffSalaryStructure
+from teachers.models import Teacher, StaffSalaryStructure, StaffPost, StaffCategory
 from finance.models import (
+
     FinancialYear, FeeStructure, ClassFeeDetail, FeeItem, 
     StudentFeeEnrollment, FeeCollection
 )
@@ -113,6 +114,11 @@ class Command(BaseCommand):
 
             # 4. Teachers (10)
             self.stdout.write(f"Generating {teacher_count} teachers...")
+            
+            # Create required Staff metadata
+            teaching_post, _ = StaffPost.objects.using(db_name).get_or_create(name="Senior Teacher")
+            teaching_cat, _ = StaffCategory.objects.using(db_name).get_or_create(name="Teaching")
+
             for i in range(teacher_count):
                 fn, ln = random.choice(first_names), random.choice(last_names)
                 username = f"teacher_{i+1}"
@@ -121,11 +127,20 @@ class Command(BaseCommand):
                     first_name=fn, last_name=ln, email=f"{username}@demo.com"
                 )
                 teacher = Teacher.objects.using(db_name).create(
-                    user=user, employee_id=f"EMP-{1000+i}", post="Senior Teacher",
-                    category="Teaching", gender="Male" if i % 2 == 0 else "Female",
-                    mobile=f"98000000{i:02d}", job_start_date=date(2022, 1, 1)
+                    user=user, 
+                    employee_id=f"EMP-{1000+i}", 
+                    post=teaching_post,
+                    category=teaching_cat, 
+                    gender="Male" if i % 2 == 0 else "Female",
+                    mobile=f"98000000{i:02d}", 
+                    job_start_date=date(2022, 1, 1)
                 )
-                StaffSalaryStructure.objects.using(db_name).create(staff=teacher, basic_salary=35000 + (i*1000))
+                StaffSalaryStructure.objects.using(db_name).create(
+                    staff=teacher, 
+                    basic_salary=35000 + (i*1000),
+                    allowances={"Tiffin": 1000, "Transport": 1500}
+                )
+
 
             # 5. Finance Setup
             fs, _ = FeeStructure.objects.using(db_name).get_or_create(financial_year=fy, name="Standard Fees")
