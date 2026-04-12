@@ -9,8 +9,19 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = 'Runs migrations for all tenants to ensure their database schemas are up to date.'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--repair-admin',
+            action='store_true',
+            help='Forces re-migration of the admin app to fix missing tables (repair mode).',
+        )
+
     def handle(self, *args, **options):
+        repair_admin = options['repair_admin']
+        
         self.stdout.write(self.style.MIGRATE_HEADING("Starting migration for all tenants..."))
+        if repair_admin:
+            self.stdout.write(self.style.WARNING("!!! REPAIR MODE ENABLED for 'admin' app !!!"))
         
         # 1. Fetch all tenants from the primary (default) database
         tenants = SchoolTenant.objects.using('default').all()
@@ -28,18 +39,19 @@ class Command(BaseCommand):
             
             try:
                 # 2. Register the database configuration dynamically
-                # This adds the tenant's DB config to settings.DATABASES if not already there
                 register_tenant_db(tenant)
-                
-                # 3. Run migrations on the registered database alias
                 db_alias = tenant.db_name
                 
-                # Check if the database configuration was successfully registered
                 from django.conf import settings
                 if db_alias not in settings.DATABASES:
                     self.stdout.write(self.style.ERROR(f"    Error: Database configuration for '{db_alias}' could not be registered."))
                     continue
 
+                if repair_admin:
+                    self.stdout.write(f"    [Repair] Rolling back admin migration history (fake)...")
+                    # Clear migration history for 'admin' app on this database
+                    call_command('migrate', 'admin', 'zero', database=db_alias, fake=True, interactive=False, verbosity=0)
+                
                 self.stdout.write(f"    Running migrations...")
                 call_command('migrate', database=db_alias, interactive=False, verbosity=1)
                 
