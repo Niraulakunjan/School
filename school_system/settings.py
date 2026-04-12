@@ -46,19 +46,20 @@ CSRF_TRUSTED_ORIGINS += [f"https://{h}" for h in ALLOWED_HOSTS if h != '*']
 PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'sajilocode.com')
 CSRF_TRUSTED_ORIGINS += [f"https://*.{PLATFORM_DOMAIN}", f"http://*.{PLATFORM_DOMAIN}"]
 
-# Force HTTPS in production (Only enable these AFTER SSL is installed on cPanel)
+# Force HTTPS and Security Hardening in production
 if not DEBUG and os.getenv('ENVIRONMENT') == 'production':
-    # SECURE_SSL_REDIRECT = True  <-- KEEP DISABLED UNTIL SSL IS INSTALLED
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'
+    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True') == 'True'
+    CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'True') == 'True'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_HSTS_SECONDS = 31536000 # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
 # Cookie Isolation
-SESSION_COOKIE_DOMAIN = None # Strictly scope cookies to the current subdomain
-CSRF_COOKIE_DOMAIN = None
+SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
+CSRF_COOKIE_DOMAIN = os.getenv('CSRF_COOKIE_DOMAIN', None)
+
 
 
 
