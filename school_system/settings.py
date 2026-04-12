@@ -38,8 +38,28 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_
 if DEBUG:
     ALLOWED_HOSTS += ['*', '127.0.0.1', 'localhost', '0.0.0.0']
 
+# --- Security & CSRF ---
 CSRF_TRUSTED_ORIGINS = [f"http://{h}" for h in ALLOWED_HOSTS if h != '*']
 CSRF_TRUSTED_ORIGINS += [f"https://{h}" for h in ALLOWED_HOSTS if h != '*']
+
+# Extra safety: Allow all subdomains of your primary domain for CSRF
+PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'sajilocode.com')
+CSRF_TRUSTED_ORIGINS += [f"https://*.{PLATFORM_DOMAIN}", f"http://*.{PLATFORM_DOMAIN}"]
+
+# Force HTTPS in production (Only enable these AFTER SSL is installed on cPanel)
+if not DEBUG and os.getenv('ENVIRONMENT') == 'production':
+    # SECURE_SSL_REDIRECT = True  <-- KEEP DISABLED UNTIL SSL IS INSTALLED
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000 # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Cookie Isolation
+SESSION_COOKIE_DOMAIN = None # Strictly scope cookies to the current subdomain
+CSRF_COOKIE_DOMAIN = None
+
 
 
 # Application definition
@@ -103,13 +123,21 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': False,
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://[a-zA-Z0-9_-]+\.sajilocode\.com$",
+    r"^https?://sajilocode\.com$",
+    r"^https?://localhost:[0-9]+$",
+]
+
 CORS_ALLOW_HEADERS = [
     'accept',
     'authorization',
     'content-type',
     'x-tenant',
 ]
+
 
 TEMPLATES = [
     {
