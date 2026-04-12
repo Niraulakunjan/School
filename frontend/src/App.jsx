@@ -74,6 +74,9 @@ const ComingSoon = ({ title }) => (
 // Blocks access to superadmin-only routes when on a tenant subdomain
 const SuperAdminOnly = ({ children }) => {
   const isTenant = !!getTenantFromSubdomain();
+  const userRole = localStorage.getItem('user_role');
+  
+  if (userRole === 'SUPERUSER') return children;
   if (isTenant) return <Navigate to="/dashboard" replace />;
   return children;
 };
@@ -81,12 +84,18 @@ const SuperAdminOnly = ({ children }) => {
 // Blocks access to tenant-only routes when on superadmin (localhost)
 const TenantOnly = ({ children }) => {
   const isTenant = !!getTenantFromSubdomain();
+  const userRole = localStorage.getItem('user_role');
+
+  if (userRole === 'SUPERUSER') return <Navigate to="/dashboard" replace />;
   if (!isTenant) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
 const DashboardIndex = () => {
   const isTenant = !!getTenantFromSubdomain();
+  const userRole = localStorage.getItem('user_role');
+
+  if (userRole === 'SUPERUSER') return <Dashboard />;
   return isTenant ? <SchoolDashboard /> : <Dashboard />;
 };
 

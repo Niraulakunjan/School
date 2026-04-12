@@ -44,6 +44,8 @@ const ATTENDANCE_ITEMS = [
 const Sidebar = () => {
     const location = useLocation();
     const tenantId = getTenantFromSubdomain();
+    const userRole = localStorage.getItem('user_role');
+    const isSuperAdmin = userRole === 'SUPERUSER';
     const [financeOpen,    setFinanceOpen]    = useState(location.pathname.startsWith('/dashboard/finance'));
     const [examOpen,       setExamOpen]       = useState(location.pathname.startsWith('/dashboard/exams'));
     const [studentOpen,    setStudentOpen]    = useState(location.pathname.startsWith('/dashboard/students'));
@@ -98,7 +100,7 @@ const Sidebar = () => {
                         <div className="overflow-hidden whitespace-nowrap">
                             <p className="text-white font-black text-base leading-none">SajiloSchool</p>
                             <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mt-0.5">
-                                {tenantId ? 'School Admin' : 'Super Admin'}
+                                {isSuperAdmin ? 'Super Admin' : 'School Admin'}
                             </p>
                         </div>
                     )}
@@ -123,7 +125,7 @@ const Sidebar = () => {
             <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar space-y-1">
                 <NavLink path="/dashboard" icon={LayoutDashboard} name="Dashboard" />
 
-                {tenantId && (
+                {!isSuperAdmin && tenantId && (
                     <>
                         <NavLink path="/dashboard/users"      icon={UserCog}      name="Users"      />
                         <NavLink path="/dashboard/classes"    icon={School}       name="Classes"    />
@@ -348,7 +350,7 @@ const Sidebar = () => {
                     </>
                 )}
 
-                {!tenantId && (
+                {isSuperAdmin && (
                     <>
                         <NavLink path="/dashboard/tenants"  icon={GraduationCap} name="Schools"  />
                         <NavLink path="/dashboard/settings" icon={Settings}      name="Settings" />

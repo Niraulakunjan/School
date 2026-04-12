@@ -38,6 +38,9 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_
 if DEBUG:
     ALLOWED_HOSTS += ['*', '127.0.0.1', 'localhost', '0.0.0.0']
 
+CSRF_TRUSTED_ORIGINS = [f"http://{h}" for h in ALLOWED_HOSTS if h != '*']
+CSRF_TRUSTED_ORIGINS += [f"https://{h}" for h in ALLOWED_HOSTS if h != '*']
+
 
 # Application definition
 DB_TYPE = os.getenv('DB_TYPE', 'sqlite')

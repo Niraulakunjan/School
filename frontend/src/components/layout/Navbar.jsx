@@ -4,8 +4,7 @@ import { getTenantFromSubdomain } from '../../utils/tenant';
 
 const Navbar = () => {
   const role = localStorage.getItem('user_role') || 'ADMIN';
-  const isTenant = !!getTenantFromSubdomain();
-  const roleLabel = isTenant ? 'School Admin' : 'Super Admin';
+  const roleLabel = role === 'SUPERUSER' ? 'Super Admin' : 'School Admin';
 
   return (
   <header className="min-h-[4rem] py-2 md:py-0 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between px-4 md:px-6 shrink-0 gap-y-3">

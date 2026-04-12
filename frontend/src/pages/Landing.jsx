@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, Users, Shield, Zap, Globe } from 'lucide-react';
 
 const features = [
@@ -8,7 +8,17 @@ const features = [
   { icon: BookOpen, title: 'Academic Tools',       desc: 'Manage attendance, grades, examinations, and assignments flawlessly.' },
 ];
 
-const Landing = () => (
+const Landing = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
+  return (
   <div className="min-h-screen bg-slate-950 flex flex-col">
     {/* Background */}
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -87,6 +97,7 @@ const Landing = () => (
       </div>
     </section>
   </div>
-);
+  );
+};
 
 export default Landing;
