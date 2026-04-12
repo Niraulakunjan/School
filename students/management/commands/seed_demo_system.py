@@ -165,11 +165,19 @@ class Command(BaseCommand):
                     )
                     sec = "A" if i < (students_per_class // 2) else "B"
                     student = Student.objects.using(db_name).create(
-                        user=user, admission_number=f"ADM-{cls.name}-{100+i}",
-                        first_name=fn, last_name=ln, gender=random.choice(['M', 'F']),
+                        user=user, 
+                        admission_number=f"ADM-{cls.name}-{100+i}-{random.randint(100, 999)}",
+                        registration_number=f"REG-{cls.name}-{100+i}-{random.randint(1000, 9999)}",
+                        first_name=fn, 
+                        last_name=ln, 
+                        gender=random.choice(['M', 'F']),
                         date_of_birth=date(2010 + random.randint(0, 5), 1, 1),
-                        class_name=cls.name, section=sec
+                        class_name=cls.name, 
+                        section=sec,
+                        guardian_name=f"{fn}'s Guardian",
+                        guardian_phone=f"98{random.randint(10000000, 99999999)}"
                     )
+
                     # Enrollment
                     StudentFeeEnrollment.objects.using(db_name).create(
                         student=student, class_fee_detail=class_fee_mappings[cls.name],
