@@ -9,11 +9,22 @@ class StudentDocumentSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     documents = StudentDocumentSerializer(many=True, read_only=True)
-
+    class_id = serializers.SerializerMethodField()
+    
     class Meta:
         model = Student
         fields = '__all__'
         read_only_fields = ('id', 'enrolled_at', 'user')
+
+    def get_class_id(self, obj):
+        from academics.models import Class
+        from utils.tenant_utils import get_current_tenant_db
+        db = get_current_tenant_db()
+        try:
+            cls = Class.objects.using(db).get(name=obj.class_name)
+            return cls.id
+        except Class.DoesNotExist:
+            return None
 
 class StudentAttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField(read_only=True)

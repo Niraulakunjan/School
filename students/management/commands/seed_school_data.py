@@ -48,6 +48,9 @@ class Command(BaseCommand):
             ExamRoutine.objects.using(db_name).all().delete()
             Exam.objects.using(db_name).all().delete()
             
+            ClassSubject.objects.using(db_name).all().delete()
+            Subject.objects.using(db_name).all().delete()
+            
             StudentFeeEnrollment.objects.using(db_name).all().delete()
             from finance.models import FeeCollection
             FeeCollection.objects.using(db_name).all().delete()
