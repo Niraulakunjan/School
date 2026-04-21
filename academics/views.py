@@ -71,7 +71,7 @@ class ClassViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            serializer.save(class_obj=class_obj, using=db)
+            serializer.save(class_obj=class_obj)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'name': ['A section with this name already exists in this class.']}, status=status.HTTP_400_BAD_REQUEST)
@@ -102,7 +102,7 @@ class ClassViewSet(viewsets.ModelViewSet):
             
         if serializer.is_valid():
             try:
-                serializer.save(class_obj=cls, using=db)
+                serializer.save(class_obj=cls)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except IntegrityError:
                 return Response({'subject': ['This subject is already assigned to this class.']}, status=status.HTTP_400_BAD_REQUEST)
