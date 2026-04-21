@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 class SchoolTenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolTenant
-        fields = ['name', 'domain_url', 'logo', 'address', 'phone', 'email']
-        read_only_fields = ['domain_url']
+        fields = ['id', 'name', 'domain_url', 'db_name', 'logo', 'address', 'phone', 'email', 'is_active']
+        read_only_fields = ['db_name']
 
     def create(self, validated_data):
         name = validated_data['name']

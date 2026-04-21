@@ -10,7 +10,7 @@ class SchoolTenant(models.Model):
     address = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
-    
+    is_active = models.BooleanField(default=True)
     created_on = models.DateField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
