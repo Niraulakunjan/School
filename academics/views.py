@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .models import Class, Section, Subject, ClassSubject
 from .serializers import ClassSerializer, SectionSerializer, SubjectSerializer, ClassSubjectSerializer
 from utils.tenant_utils import get_current_tenant_db
+from django.db import IntegrityError
 
 
 class ClassViewSet(viewsets.ModelViewSet):
@@ -61,12 +62,21 @@ class ClassViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='sections')
     def add_section(self, request, pk=None):
         db = get_current_tenant_db()
+        if db == 'default':
+            return Response({'detail': 'Tenant context required.'}, status=status.HTTP_400_BAD_REQUEST)
+            
         class_obj = self.get_object()
         serializer = SectionSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save(class_obj=class_obj, using=db)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        try:
+            serializer.save(class_obj=class_obj, using=db)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            return Response({'name': ['A section with this name already exists in this class.']}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['delete'], url_path='sections/(?P<section_id>[^/.]+)')
     def delete_section(self, request, pk=None, section_id=None):
@@ -81,6 +91,9 @@ class ClassViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='subjects')
     def add_subject(self, request, pk=None):
         db = get_current_tenant_db()
+        if db == 'default':
+            return Response({'detail': 'Tenant context required.'}, status=status.HTTP_400_BAD_REQUEST)
+            
         cls = self.get_object()
         serializer = ClassSubjectSerializer(data=request.data)
         # Set database for validation
@@ -88,8 +101,13 @@ class ClassViewSet(viewsets.ModelViewSet):
             serializer.fields['subject'].queryset = Subject.objects.using(db).all()
             
         if serializer.is_valid():
-            serializer.save(class_obj=cls, using=db)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save(class_obj=cls, using=db)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                return Response({'subject': ['This subject is already assigned to this class.']}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['delete'], url_path='subjects/(?P<sub_id>[^/.]+)')
